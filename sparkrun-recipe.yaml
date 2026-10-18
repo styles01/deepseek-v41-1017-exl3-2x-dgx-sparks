@@ -1,0 +1,40 @@
+# Sparkrun v2 recipe — DeepSeek-V4.1-Flash-1017 EXL3 2.9bpw on 2x DGX Spark (GB10), two-node TP2.
+# The container carries the tuned engine (Sudosu's patches + the 1017 overlay); weights are NOT
+# in the image — run one-button.sh first on a node with ~430 GB NVMe to download + repack them,
+# or point `model` at an already-repacked local dir via --model override.
+# Bench: kit_bench.py decode (set a) reference numbers from the dev lane:
+#   code 88.3 / prose 49.1 / structured 105.9 tok/s (corrected depth policy, see METHOD-1017.md).
+
+recipe_version: "2"
+model: LibertAIDAI/DeepSeek-V4.1-Flash-1017-EXL3-2.9bpw
+runtime: vllm
+container: ghcr.io/styles01/dsv41-1017-exl3-2x-dgx-sparks:v1
+min_nodes: 2
+max_nodes: 2
+
+defaults:
+  port: 8000
+  host: 0.0.0.0
+  tensor_parallel: 2          # 1 rank per Spark, RoCE fabric
+  gpu_memory_utilization: 0.85
+  max_model_len: 262144
+  max_num_seqs: 2
+  served_model_name: dsv41
+
+launch:
+  env:
+    VLLM_DSPARK_ROUND_MS: "31.9,35.2,38.6,42.6,45.3,48.1,51.0"
+    VLLM_DSPARK_DRAFT_MS: "0"
+    ENGRAM_DISK_THREADS: "256"
+  spec: '{"method":"dspark","num_speculative_tokens":6,"draft_parallel_config":{"tensor_parallel_size":2}}'
+  command: |
+    vllm serve {model_path} \
+      --served-model-name {served_model_name} \
+      --host {host} --port {port} \
+      --tensor-parallel-size {tensor_parallel} \
+      --max-model-len {max_model_len} \
+      --max-num-seqs {max_num_seqs} \
+      --gpu-memory-utilization {gpu_memory_utilization} \
+      --speculative-config '{spec}' \
+      --engram '{engram}' \
+      --kv-cache-memory-bytes 2684354560
