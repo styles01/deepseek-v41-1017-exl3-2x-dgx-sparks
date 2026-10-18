@@ -1,0 +1,46 @@
+recipe_version: "1"
+name: dsv41-tp2-2x
+description: "DeepSeek-V4.1-Flash EXL3 2.7bpw on 2x DGX Spark (GB10) via upstream vLLM 0.31.1-dev (6e517b15) + 22 recipe patches + exl3_moe plugin (TensorFold RDMA ring/prefetch vendored, TF grouped prompt kernels since v1.1). TP=2 over ConnectX, Engram disk offload, DSpark spec k=5."
+model: sudoingx/DeepSeek-V4.1-Flash-EXL3-2.7bpw
+model_revision: "2cba9e42aa026125f3ed06c6d98c1db82f7ca027"
+runtime: vllm-distributed
+maintainer: styles01
+
+metadata:
+  author: styles01
+  created: "2026-10-12"
+  status: "arena-candidate"
+  tags: [deepseek, v4.1-flash, exl3, dsv41, gb10, sm121, tp2, tensorfold-kernels]
+  quantization: "int4"
+  model_dtype: "int4"
+  engine_repo: "https://github.com/sudoingX/dgx-spark-deepseek-v41"
+  engine_version: "v1.1 (cc59c36) on vllm 6e517b15"
+  container_build: "install.sh builds dsv41-serve image locally (wheels for sm_121)"
+
+solo_only: false
+min_nodes: 2
+max_nodes: 2
+
+container: dsv41-serve:local
+cluster_only: true
+
+requirements:
+  architecture: aarch64
+  gpu_compute_capability: "12.1"
+  exclusive_spark_lane: true
+
+defaults:
+  port: 8000
+  host: "0.0.0.0"
+  tensor_parallel: 2
+  max_model_len: 275000
+  max_num_seqs: 4
+  max_num_batched_tokens: 2048
+  gpu_memory_utilization: 0.88
+  served_model_name: dsv41
+
+env:
+  HF_HOME: /cache/huggingface
+  HF_HUB_OFFLINE: "1"
+
+command: |
