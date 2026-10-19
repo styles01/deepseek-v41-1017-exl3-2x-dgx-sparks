@@ -18,7 +18,7 @@ defaults:
   tensor_parallel: 2          # 1 rank per Spark, RoCE fabric
   gpu_memory_utilization: 0.85
   max_model_len: 262144
-  max_num_seqs: 2
+  max_num_seqs: 4
   served_model_name: dsv41
 
 launch:

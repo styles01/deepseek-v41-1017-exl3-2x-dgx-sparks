@@ -15,10 +15,10 @@ HEAD=${HEAD:-spark}; WORKER=${WORKER:-spark2}
 FAB_IF=${FAB_IF:-enp1s0f0np0}; FAB_HCA=${FAB_HCA:-rocep1s0f0}
 IMAGE=${IMAGE:-dsv41-serve:v4}   # the release image: patches 0001-0008 and 0010-0021 + the plugin (README quickstart)
 SERVED=${SERVED:-dsv41}; PORT=${PORT:-8000}
-MAX_LEN=${MAX_LEN:-262144}; MAX_SEQS=${MAX_SEQS:-2}; MAX_BATCH=${MAX_BATCH:-2048}; UTIL=${UTIL:-0.88}
+MAX_LEN=${MAX_LEN:-262144}; MAX_SEQS=${MAX_SEQS:-4}; MAX_BATCH=${MAX_BATCH:-2048}; UTIL=${UTIL:-0.85}
 # KV pool pinned per rank instead of sized from UTIL: 2.5 GiB, as Mia-AiLab's kit ships (KV_CACHE_MEMORY_BYTES, her README:
 # ~774K tokens of fp8_ds_mla per rank), so both serves get the same pool; KV_BYTES= (empty) sizes it from UTIL again
-KV_BYTES=${KV_BYTES-2684354560}
+KV_BYTES=${KV_BYTES-4000000000}
 SPEC=${SPEC-'{"method":"dspark","num_speculative_tokens":5}'}
 GRAPH=${GRAPH:-'{"cudagraph_mode":"FULL_DECODE_ONLY"}'}
 # 256 reader threads: with 32, Engram disk reads stalled a 512-token prefill step ~74 ms (dummy-boot profile, Oct 8);
